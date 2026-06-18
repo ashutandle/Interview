@@ -1,27 +1,29 @@
-# Use the official Ubuntu as a parent image
-FROM ubuntu:20.04
 
-# Update the package list and install Nginx
-RUN apt-get update && apt-get install -y nginx
+FROM ubuntu:20.04                                      # Use the official Ubuntu as a parent image
 
-# Remove the default Nginx index.html file
-RUN rm -f /var/www/html/index.nginx-debian.html
+RUN apt-get update && apt-get install -y nginx         # Update the package list and install Nginx
 
-# Copy custom static files or configuration (optional)
-# COPY ./index.html /var/www/html/
+RUN rm -f /var/www/html/index.nginx-debian.html        # Remove the default Nginx index.html file
+ 
+COPY ./index.html /var/www/html/                       # Copy custom static files or configuration (optional)
 
-# Expose port 80 to allow web traffic
-EXPOSE 80
+EXPOSE 80                                              # Expose port 80 to allow web traffic
 
-# Start Nginx in the foreground
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;"]                      # Start Nginx in the foreground
 
 
+##### Create a multi-stage Dockerfile.
 
-Breakdown:
-FROM ubuntu:20.04: Uses Ubuntu 20.04 as the base image.
-RUN apt-get update && apt-get install -y nginx: Updates the package list and installs Nginx.
-RUN rm -f /var/www/html/index.nginx-debian.html: Removes the default Nginx welcome page (optional).
-COPY ./index.html /var/www/html/: Optionally, you can copy your custom HTML files into the Nginx web directory.
-EXPOSE 80: Exposes port 80 for HTTP traffic.
-CMD ["nginx", "-g", "daemon off;"]: Runs Nginx in the foreground to keep the container running.
+FROM maven:3.9-amazoncorretto-17 AS build
+
+WORKDIR /app
+
+COPY . .
+
+RUN mvn clean package
+
+FROM amazoncorretto:17
+
+COPY --from=build /app/target/*.jar app.jar
+
+CMD ["java","-jar","app.jar"]
