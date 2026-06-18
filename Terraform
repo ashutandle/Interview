@@ -1,0 +1,17 @@
+### Provision an EC2 instance. ###
+
+provider "aws" {
+  region = "ap-south-1"
+}
+
+resource "aws_instance" "web" {
+  ami           = "ami-xxxxxxxx"
+  instance_type = "t2.micro"
+}
+
+### Create an S3 bucket. ###
+
+resource "aws_s3_bucket" "demo" {
+  bucket = "my-demo-bucket"
+}
+
